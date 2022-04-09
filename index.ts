@@ -64,6 +64,9 @@ export abstract class BaseModel<ExT> {
   //Procedure to mutate the store following SAM principles
   present(store?: { [Prop in keyof this["publicStore"]]?: extractGeneric<this["publicStore"][Prop]> }, ext?:ExT): true | undefined {
     this.presentLogic(store, ext)
+    return this.processState()
+  }
+  processState(){
     if (this.stateDidChange.value) {
       //Set flag back to false
       this.stateDidChange.value = false

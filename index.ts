@@ -20,7 +20,6 @@ class StorePropertyImpl<T> implements StoreProperty<T>{
     return this.subject.subscribe(next);
   } 
   set(value: T) {
-    Object.freeze(value)
     this.value = value
     this.changed = true
     this.changedCallback.value = true
@@ -66,7 +65,7 @@ export abstract class BaseModel<ExT> {
     this.presentLogic(store, ext)
     return this.processState()
   }
-  processState(){
+  protected processState(){
     if (this.stateDidChange.value) {
       //Set flag back to false
       this.stateDidChange.value = false

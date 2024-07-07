@@ -1,10 +1,10 @@
 import { Subject } from "rxjs";
-class StorePropertyImpl {
-    constructor(value, didChange) {
-        this.changed = false;
-        this.subject = new Subject();
+class StoreProperty {
+    value;
+    changed = false;
+    subject = new Subject();
+    constructor(value) {
         this.value = value;
-        this.changedCallback = didChange;
     }
     subscribe(next) {
         return this.subject.subscribe(next);
@@ -16,7 +16,6 @@ class StorePropertyImpl {
     set(value) {
         this.value = value;
         this.changed = true;
-        this.changedCallback.value = true;
     }
     broadcast() {
         if (this.changed == true) {
@@ -27,21 +26,33 @@ class StorePropertyImpl {
     didChange() {
         return this.changed;
     }
+    pipe(...operations) {
+        let obs = this.subject.pipe(operations);
+        return new StorePropertyPiped(obs, this);
+    }
+}
+class StorePropertyPiped {
+    obs;
+    prop;
+    constructor(obs, prop) {
+        this.obs = obs;
+        this.prop = prop;
+    }
+    subscribe(next) {
+        return this.prop.subscribe(next);
+    }
+    subscribeAndGetCurrent(next) {
+        return this.prop.subscribeAndGetCurrent(next);
+    }
+    pipe(...operations) {
+        this.obs = this.obs.pipe(operations);
+        return this;
+    }
 }
 export class BaseModel {
-    constructor() {
-        this.stateChangedEmiter = new Subject();
-        //Must be set to true if the model is mutated
-        this.stateDidChange = { value: false };
-    }
-    get closedModel() {
-        if (this._closedModel) {
-            return this._closedModel;
-        }
-        else {
-            return BuildClosedModel(this);
-        }
-    }
+    stateChangedEmiter = new Subject();
+    //Must be set to true if the model is mutated
+    stateDidChange = { value: false };
     //Procedure to mutate the store following SAM principles
     present(store, ext) {
         this.presentLogic(store, ext);
@@ -73,18 +84,15 @@ export class BaseModel {
     }
     //Used to initialize store properties
     createProperty(value) {
-        return new StorePropertyImpl(value, this.stateDidChange);
+        return new StoreProperty(value);
     }
 }
-export function BuildClosedModel(model) {
+function BuildClosedModel(model) {
     return new ClosedModelImpl(model);
 }
 class ClosedModelImpl {
-    constructor(model) {
-        this.present = model.present;
-        this.model = model;
-        this.present = this.present.bind(model);
-    }
+    model;
+    present;
     sub(name, subs) {
         return this.model.publicStore[name].subscribe(subs);
     }
@@ -94,5 +102,10 @@ class ClosedModelImpl {
     getVal(name) {
         return this.model.publicStore[name].value;
     }
+    constructor(model) {
+        this.present = model.present;
+        this.model = model;
+        this.present = this.present.bind(model);
+    }
 }
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=oldModel.js.map

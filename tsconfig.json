@@ -7,13 +7,16 @@
     "declaration": true,
     "noImplicitAny": true,
     "removeComments": false,
-    "preserveConstEnums": false,
     "sourceMap": true,
-    "target": "es2021",
+    "target": "ESNext",
     "experimentalDecorators": true,
     "baseUrl": "./",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": false,
     "strict": true,
     "alwaysStrict": true,
-  }
+  },
+  "include": [
+    "src/**/*"
+  ]
 }

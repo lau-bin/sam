@@ -1,20 +1,22 @@
 {
-  "name": "sam",
+  "name": "@h4rdcoder/sam",
   "version": "2.0.0",
   "description": "SAM pattern library",
-  "main": "out/index.js",
+  "sideEffects": false,
+  "main": "out/model.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc"
   },
   "author": "Lautaro C",
   "dependencies": {
-    "rxjs": "^7.5.2"
+    "rxjs": "^7.8.1"
   },
   "type": "module",
   "devDependencies": {
     "typescript": "^4.5.2"
   },
   "keywords": [],
-  "licence": "ISC"
+  "licence": "ISC",
+  "types": "out/model.d.ts"
 }

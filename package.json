@@ -1,6 +1,6 @@
 {
   "name": "@h4rdcoder/sam",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "SAM pattern library",
   "sideEffects": false,
   "main": "out/model.js",

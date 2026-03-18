@@ -3,20 +3,33 @@
   "version": "3.0.0",
   "description": "SAM pattern library",
   "sideEffects": false,
-  "main": "out/model.js",
+  "exports": {
+    ".": {
+      "types": "./out/index.d.ts",
+      "import": "./out/index.js"
+    },
+    "./model": {
+      "types": "./out/model.d.ts",
+      "import": "./out/model.js"
+    }
+  },
+  "files": [
+    "out"
+  ],
+  "prepublishOnly": "npm run build",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc"
   },
   "author": "Lautaro C",
   "dependencies": {
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.2"
   },
   "type": "module",
   "devDependencies": {
-    "typescript": "^4.5.2"
+    "typescript": "^5.9.3"
   },
   "keywords": [],
-  "licence": "ISC",
+  "license": "MIT",
   "types": "out/model.d.ts"
 }

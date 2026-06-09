@@ -57,9 +57,13 @@ expectType<ModelPublicState<typeof dyn, StaticState>>(staticModel.__stateType);
 expectType<Readonly<StaticState> | undefined>(staticModel.__stateType.static);
 
 const modelWithLogic = createModel(dyn, {
-  actionLogic(action, state) {
+  actionLogic(action, state, set, mutate, operators, handle) {
     expectType<BoundAction<ModelPublicState<typeof dyn, undefined>>>(action);
-    expectType<ModelWritableStore<typeof dyn, undefined>>(state);
+    expectType<ModelPublicState<typeof dyn, undefined>>(state);    
+    expectType<SetFn<ModelPublicState<typeof dyn, undefined>>>(set);
+    expectType<MutateFn<ModelPublicState<typeof dyn, undefined>>>(mutate);
+    expectAssignable<Record<string, unknown>>(operators);
+    expectType<void>(handle(action));
 
     return new Rejection("blocked");
   },

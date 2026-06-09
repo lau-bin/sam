@@ -1,5 +1,5 @@
 import {
-  BoundAction, Model, ModelPublicState, ModelWritableStore, MutateAction, MutateFn, OperatorMap,
+  BoundAction, BoundMutateOperators, Model, ModelPublicState, ModelWritableStore, MutateAction, MutateFn, OperatorMap,
   Proposal, ProposalAction, PublicStore, Reaction, Rejection, SetFn, WritableDyn,
 } from "./model.js";
 
@@ -85,7 +85,14 @@ type CreateModelOptions<Dyn extends WritableDyn, Static, MutOps extends object, 
     proposal?: PropOps & ProposalOperatorShape<ModelPublicState<Dyn, Static>>;
   };
 
-  actionLogic?: (action: BoundAction<ModelPublicState<Dyn, Static>>, state: ModelWritableStore<Dyn, Static>) => Rejection | undefined;
+  actionLogic?: (
+    action: BoundAction<ModelPublicState<Dyn, Static>>,
+    state: ModelPublicState<Dyn, Static>,
+    set: SetFn<ModelPublicState<Dyn, Static>>,
+    mutate: MutateFn<ModelPublicState<Dyn, Static>>,
+    operators: BoundMutateOperators<FlatOperators<ModelPublicState<Dyn, Static>, MutOps, PropOps>, ModelPublicState<Dyn, Static>>,
+    handle: (action: BoundAction<ModelPublicState<Dyn, Static>>) => void
+  ) => Rejection | undefined;
 
   reactionLogic?: Reaction<ModelPublicState<Dyn, Static>, FlatOperators<ModelPublicState<Dyn, Static>, MutOps, PropOps>>;
 };

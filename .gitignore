@@ -1,4 +1,7 @@
 /node_modules/
 .vscode
 package-lock.json
-out/
+dist/
+.devcontainer/
+.pnpm*
+*.log

@@ -1,36 +1,61 @@
 {
   "name": "easysam",
-  "version": "3.0.0",
+  "version": "4.2.0",
   "description": "SAM pattern library",
   "sideEffects": false,
+  "type": "module",
   "exports": {
     ".": {
-      "types": "./out/index.d.ts",
-      "import": "./out/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./model": {
-      "types": "./out/model.d.ts",
-      "import": "./out/model.js"
+      "types": "./dist/model.d.ts",
+      "import": "./dist/model.js"
+    },
+    "./model/factory": {
+      "types": "./dist/factory.d.ts",
+      "import": "./dist/factory.js"
+    },
+    "./adapter/react-store": {
+      "types": "./dist/adapter/react-store.d.ts",
+      "import": "./dist/adapter/react-store.js"
     }
   },
   "files": [
-    "out"
+    "dist"
   ],
   "prepublishOnly": "npm run build",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx tsc",
+    "clean": "rm -rf dist",
+    "build": "tsc -p tsconfig.json",
+    "test:types": "npm run build 2>&1 | tee type-test.log && npx tsd --files \"test-d/**/*.test-d.ts\" 2>&1 | tee -a type-test.log",
+    "prepublishOnly": "npm run test:types",
     "prepare": "npm run build"
   },
   "author": "Lautaro C",
   "dependencies": {
     "rxjs": "^7.8.2"
   },
-  "type": "module",
+  "peerDependencies": {
+    "react": ">=17 <20",
+    "use-sync-external-store": "^1.6.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "use-sync-external-store": {
+      "optional": true
+    }
+  },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "@types/react": "^19.2.17",
+    "@types/use-sync-external-store": "^1.5.0",
+    "tsd": "^0.33.0",
+    "typescript": "^6.0.3"
   },
   "keywords": [],
   "license": "MIT",
-  "types": "out/model.d.ts"
+  "types": "./dist/index.d.ts"
 }

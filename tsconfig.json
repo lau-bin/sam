@@ -1,22 +1,15 @@
 {
   "compilerOptions": {
+    "target": "ES2022",
+    "rootDir": "src",
     "module": "NodeNext",
-    "outDir": "out",
-    "allowJs": false,
     "moduleResolution": "NodeNext",
-    "declaration": true,
-    "noImplicitAny": true,
-    "removeComments": false,
-    "sourceMap": true,
-    "target": "ESNext",
-    "experimentalDecorators": true,
-    "baseUrl": "./",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": false,
     "strict": true,
-    "alwaysStrict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": false,
+    "outDir": "dist",
+    "skipLibCheck": true
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src"]
 }

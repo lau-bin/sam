@@ -554,10 +554,14 @@ export class Model<
   private lastYieldTs = performance.now();
   private readonly maxSyncMs = 8;
 
-  private readonly actionLogic: (
+  private readonly actionLogic: undefined | ((
     action: BoundAction<ModelPublicState<Dyn, Static>>,
-    state: ModelWritableStore<Dyn, Static>,
-  ) => Rejection | undefined;
+    state: ModelPublicState<Dyn, Static>,
+    set: SetFn<ModelPublicState<Dyn, Static>>,
+    mutate: MutateFn<ModelPublicState<Dyn, Static>>,
+    operators: BoundMutateOperators<OperatorDefs, ModelPublicState<Dyn, Static>>,
+    handle: (action: BoundAction<ModelPublicState<Dyn, Static>>) => void
+  ) => Rejection | undefined);
 
   private readonly reactionLogic: Reaction<ModelPublicState<Dyn, Static>, OperatorDefs> | undefined;
 
@@ -574,7 +578,11 @@ export class Model<
       operators?: OperatorDefs & OperatorMap<ModelPublicState<Dyn, Static>>;
       actionLogic?: (
         action: BoundAction<ModelPublicState<Dyn, Static>>,
-        state: ModelWritableStore<Dyn, Static>,
+        state: ModelPublicState<Dyn, Static>,
+        set: SetFn<ModelPublicState<Dyn, Static>>,
+        mutate: MutateFn<ModelPublicState<Dyn, Static>>,
+        operators: BoundMutateOperators<OperatorDefs, ModelPublicState<Dyn, Static>>,
+        handle: (action: BoundAction<ModelPublicState<Dyn, Static>>) => void
       ) => Rejection | undefined;
       reactionLogic?: Reaction<ModelPublicState<Dyn, Static>, OperatorDefs>;
     },
@@ -585,17 +593,6 @@ export class Model<
     this.operatorDefs = (options?.operators ?? {}) as OperatorDefs;
 
     this.actionLogic = options?.actionLogic
-      ? options.actionLogic
-      : (action) => {
-        if (action.type == ActionType.PROPOSAL) {
-          this.mergeProposal(action.run());
-        } else {
-          action.run();
-        }
-
-        return undefined;
-      };
-
     this.reactionLogic = options?.reactionLogic;
   }
 
@@ -614,11 +611,24 @@ export class Model<
     }
   }
 
-  private processOneCycle(action: ModelAction<ModelPublicState<Dyn, Static>, OperatorDefs>): ActionResult {
-    const boundAction = this.bindAction(action);
+  private defaultActionLogic(action: ModelAction<ModelPublicState<Dyn, Static>, OperatorDefs>) {
+    if (action.type == ActionType.PROPOSAL) {
+      this.mergeProposal(action.run(this.publicState, this.handleDefer.bind(this), this.bindProposalOperators()));
+    } else {
+      action.run(this.publicState, this.handleDefer.bind(this), this.handleSetPublic.bind(this), this.handleMutatePublic.bind(this), this.bindMutateOperators());
+    }
 
+    return undefined;
+  }
+
+  private processOneCycle(action: ModelAction<ModelPublicState<Dyn, Static>, OperatorDefs>): ActionResult {
     try {
-      const result = this.actionLogic(boundAction, this.store);
+      const result = this.actionLogic ?
+        this.actionLogic(
+          this.bindAction(action), this.publicState, this.handleSetPublic.bind(this),
+          this.handleMutatePublic.bind(this), this.bindMutateOperators(), this.defaultActionLogic.bind(this)
+        )
+        : this.defaultActionLogic(action);
 
       if (result) {
         return result;
@@ -635,7 +645,12 @@ export class Model<
         this.reactionLogic &&
           this.reactionLogic(this.publicState, (reaction) => {
             const boundReaction = this.bindAction(reaction);
-            return this.actionLogic(boundReaction, this.store);
+            return this.actionLogic ?
+              this.actionLogic(
+                this.bindAction(boundReaction), this.publicState, this.handleSetPublic.bind(this),
+                this.handleMutatePublic.bind(this), this.bindMutateOperators(), this.defaultActionLogic.bind(this)
+              )
+              : this.defaultActionLogic(boundReaction);
           });
 
         const reactionsCant = this.reactions.length; // Prevent running reactions added from a reaction.
@@ -643,7 +658,12 @@ export class Model<
         for (let i = 0; i < reactionsCant; i++) {
           this.reactions[i](this.publicState, (reactionAction) => {
             const boundReaction = this.bindAction(reactionAction);
-            return this.actionLogic(boundReaction, this.store);
+            return this.actionLogic ?
+              this.actionLogic(
+                this.bindAction(boundReaction), this.publicState, this.handleSetPublic.bind(this),
+                this.handleMutatePublic.bind(this), this.bindMutateOperators(), this.defaultActionLogic.bind(this)
+              )
+              : this.defaultActionLogic(boundReaction);
           });
         }
       } catch (_) {
